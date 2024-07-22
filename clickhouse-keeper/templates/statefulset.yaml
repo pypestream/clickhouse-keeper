@@ -73,13 +73,10 @@ spec:
             items:
               - key: keeper_config.xml
                 path: keeper_config.xml
+        {{- if and (not .Values.persistence.enabled) (not .Values.persistence.existingClaim) }}
         - name: clickhouse-keeper-data
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default (include "clickhouse-keeper.claimName" .) }}
-          {{- else }}
           emptyDir: {}
-          {{- end }} 
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -98,7 +95,7 @@ spec:
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
   volumeClaimTemplates:
     - metadata:
-        name: {{ printf "%s-data" (include "clickhouse-keeper.fullname" .) }}
+        name: clickhouse-keeper-data
       spec:
         {{- with .Values.persistence.accessMode }}
         accessModes:
