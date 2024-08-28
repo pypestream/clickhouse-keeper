@@ -163,7 +163,7 @@ tolerations: []
 affinity: {}
 
 topologyConstraints:
-  enabled: true
+  enabled: false
   topologySpreadConstraints:
     - maxSkew: 0
       topologyKey: topology.ebs.csi.aws.com/zone
