@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: {{ include "clickhouse-keeper.fullname" . }}
+  name: sts-{{ include "clickhouse-keeper.fullname" . }}
   labels:
     {{- include "clickhouse-keeper.labels" . | nindent 4 }}
 spec:
@@ -31,6 +31,10 @@ spec:
       {{- end }}
       securityContext:
         {{- toYaml .Values.podSecurityContext | nindent 8 }}
+      {{- if .Values.topologyConstraints.enabled }}
+      topologySpreadConstraints:
+        {{- toYaml .Values.topologyConstraints.topologySpreadConstraints | nindent 8 }}
+      {{- end }}
       containers:
         - name: {{ .Chart.Name }}
           securityContext:
@@ -73,13 +77,10 @@ spec:
             items:
               - key: keeper_config.xml
                 path: keeper_config.xml
+        {{- if and (not .Values.persistence.enabled) (not .Values.persistence.existingClaim) }}
         - name: clickhouse-keeper-data
-          {{- if .Values.persistence.enabled }}
-          persistentVolumeClaim:
-            claimName: {{ .Values.persistence.existingClaim | default (include "clickhouse-keeper.claimName" .) }}
-          {{- else }}
           emptyDir: {}
-          {{- end }} 
+        {{- end }}
       {{- with .Values.volumes }}
         {{- toYaml . | nindent 8 }}
       {{- end }}
@@ -98,7 +99,7 @@ spec:
   {{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
   volumeClaimTemplates:
     - metadata:
-        name: {{ printf "%s-data" (include "clickhouse-keeper.fullname" .) }}
+        name: clickhouse-keeper-data
       spec:
         {{- with .Values.persistence.accessMode }}
         accessModes:

@@ -161,3 +161,13 @@ nodeSelector: {}
 tolerations: []
 
 affinity: {}
+
+topologyConstraints:
+  enabled: false
+  topologySpreadConstraints:
+    - maxSkew: 0
+      topologyKey: topology.ebs.csi.aws.com/zone
+      whenUnsatisfiable: DoNotSchedule
+      labelSelector:
+        matchLabels:
+          app.kubernetes.io/name: clickhouse-keeper
